@@ -28,8 +28,12 @@ from pprint import pprint
 
 win = curses.initscr()
 HEIGHT, WIDTH = win.getmaxyx()
-tbox = textpad.Textbox(win, insert_mode = True)
-text = "TEST"
+text = ""
+todo = []
+
+
+def getToDoJsonFP():
+    return os.path.join(os.path.expanduser("~"), ".ToDo.json")
 
 
 def safeExit():
@@ -37,11 +41,25 @@ def safeExit():
     sys.exit(0)
 
 
-def getToDoTxtFP():
-    return os.path.join(os.path.expanduser("~"), ".ToDo.json")
+def addItemToList(item):
+    pass
+
+
+def checkForExit():
+    check = text.lower()
+    if check == "q" or check == "x" or check == "exit" or check == "quit":
+        safeExit()
+
+
+def checkForAdd():
+    if text.lower()[:3] == "add":
+        addItemToList(text[2:])
+    elif text.lower()[:1] == "+":
+        addItemToList(text[0:])
 
 
 def runText():
+    checkForExit()
     win.addstr(10, 5, text)
 
 
@@ -53,25 +71,23 @@ def removeCharFromText():
 def addToText(event):
     global text
     text = text+event
-    win.addstr(5, 5, event)
     win.addstr(6, 5, text)
 
 
 def checkEvent(event):
-    if event == ord("q"):
-        safeExit()
-    elif event == ord("\n"):
+    if event == ord("\n"):
         runText()
         resetCursor()
-    elif str(event) == "\b":
+    elif event == curses.KEY_BACKSPACE or int(event) == 127:
         removeCharFromText()
     else:
         addToText(chr(event))
-    win.addstr(HEIGHT-2, 2, text)
+    win.addstr(1, 5, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
+    win.addstr(6, 5, text)
 
 
 def drawTitle():
-    win.addstr(2, 5, "ToDo List " + str(HEIGHT) + " " + str(WIDTH), curses.A_BOLD)
+    win.addstr(2, 5, "ToDo List")
     win.addstr(3, 5, "---------")
 
 
@@ -84,17 +100,22 @@ def resetCursor():
     win.move(HEIGHT-2, 2)
 
 
-def mainLoop():
-    '''Run the main Program Loop. Quit with "q".'''
+def drawAll():
     drawTitle()
     drawRectangle()
+    win.addstr(HEIGHT-2, 2, text)
+
+
+def mainLoop():
+    '''Run the main Program Loop. Quit with "q".'''
+    drawAll()
     resetCursor()
     while True:
         event = win.getch()
         if event:
-            win.addstr(5, 5, chr(event))
-            win.addstr(6, 5, text)
+            win.clear()
             checkEvent(event)
+            drawAll()
 
 
 def setupCurses():
