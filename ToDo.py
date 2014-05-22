@@ -21,7 +21,7 @@ Options:
 '''
 
 
-import os, sys
+import os, sys, json
 import curses
 import curses.textpad as textpad
 from pprint import pprint
@@ -32,18 +32,40 @@ text = ""
 tasks = []
 
 
-def getToDoJsonFP():
+def getJsonFP():
     return os.path.join(os.path.expanduser("~"), ".ToDo.json")
 
 
+def loadTasks():
+    try:
+        f = open(getJsonFP(), 'r')
+        data = json.loads(f.read())
+        f.close()
+        return data
+    except Exception, e:
+        f = open(getJsonFP(), 'w')
+        json.dump([], f)
+        f.close()
+        return loadTasks()
+
+
+def saveTasks():
+    f = open(getJsonFP(), 'w')
+    json.dump(tasks, f)
+    f.close()
+
+
 def safeExit():
+    #if tasks:
+    #    saveTasks()
     curses.endwin()
     sys.exit(0)
 
 
 def addItemToList(item):
     item = stripSpaceFromEnds(item)
-    win.addstr(15, 5, "Item:"+item)
+    tasks.append({ "task" : item, "ID" : len(tasks), "tags" : [] })
+    saveTasks()
 
 
 def checkForExit():
@@ -72,7 +94,6 @@ def executeText():
     text = stripSpaceFromEnds(text)
     checkForExit()
     checkForAdd()
-    win.addstr(10, 5, text)
 
 
 def removeCharFromText():
@@ -83,7 +104,6 @@ def removeCharFromText():
 def addToText(event):
     global text
     text = text+event
-    win.addstr(6, 5, text)
 
 
 def checkEvent(event):
@@ -94,13 +114,25 @@ def checkEvent(event):
         removeCharFromText()
     else:
         addToText(chr(event))
-    win.addstr(1, 5, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
-    win.addstr(6, 5, text)
+    #win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
+
+
+def drawText():
+    win.addstr(HEIGHT-2, 2, text)
+
+
+def drawTasks():
+    for task in tasks:
+        t = task['task']
+        ID = task['ID']
+        tags = task['tags']
+        s = str(ID) + ". " + t
+        win.addstr(5 + 2*ID, 4, s)
 
 
 def drawTitle():
-    win.addstr(2, 5, "ToDo List")
-    win.addstr(3, 5, "---------")
+    win.addstr(2, 4, "ToDo List")
+    win.addstr(3, 4, "---------")
 
 
 def drawRectangle():
@@ -114,9 +146,11 @@ def resetCursor():
 
 
 def drawAll():
+    '''Draw everything.'''
     drawTitle()
     drawRectangle()
-    win.addstr(HEIGHT-2, 2, text)
+    drawTasks()
+    drawText()
 
 
 def mainLoop():
@@ -133,21 +167,18 @@ def mainLoop():
 
 def setupCurses():
     curses.noecho()
-    #curses.curs_set(0)
     win.keypad(1)
 
 
 def setup():
     setupCurses()
+    global tasks
+    tasks = loadTasks()
 
 
 def main():
     setup()
-    #try:
     mainLoop()
-    #except Exception, e:
-    #    pprint(e)
-    #    safeExit()
 
 
 if __name__ == "__main__":
