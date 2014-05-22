@@ -12,7 +12,7 @@ My CLI ToDo.
 Usage:
     ToDo.py
     ToDo.py [-h | --help] [-v | --version]
-    ToDo.py <project>
+    ToDo.py <tag>
 
 Options:
     -h --help           Show this screen.
@@ -29,7 +29,7 @@ from pprint import pprint
 win = curses.initscr()
 HEIGHT, WIDTH = win.getmaxyx()
 text = ""
-todo = []
+tasks = []
 
 
 def getToDoJsonFP():
@@ -42,7 +42,8 @@ def safeExit():
 
 
 def addItemToList(item):
-    pass
+    item = stripSpaceFromEnds(item)
+    win.addstr(15, 5, "Item:"+item)
 
 
 def checkForExit():
@@ -52,14 +53,25 @@ def checkForExit():
 
 
 def checkForAdd():
-    if text.lower()[:3] == "add":
+    if text.lower()[:4] == "add ":
+        addItemToList(text[4:])
+    elif text.lower()[:2] == "+ ":
         addItemToList(text[2:])
-    elif text.lower()[:1] == "+":
-        addItemToList(text[0:])
 
 
-def runText():
+def stripSpaceFromEnds(s):
+    while s[-1:] == " ":
+        s = s[:-1]
+    while s[:1] == " ":
+        s = s[1:]
+    return s
+
+
+def executeText():
+    global text
+    text = stripSpaceFromEnds(text)
     checkForExit()
+    checkForAdd()
     win.addstr(10, 5, text)
 
 
@@ -76,7 +88,7 @@ def addToText(event):
 
 def checkEvent(event):
     if event == ord("\n"):
-        runText()
+        executeText()
         resetCursor()
     elif event == curses.KEY_BACKSPACE or int(event) == 127:
         removeCharFromText()
@@ -96,6 +108,7 @@ def drawRectangle():
 
 
 def resetCursor():
+    global text
     text = ""
     win.move(HEIGHT-2, 2)
 
@@ -129,8 +142,6 @@ def setup():
 
 
 def main():
-    fp = getToDoTxtFP()
-    print(fp)
     setup()
     #try:
     mainLoop()
