@@ -10,7 +10,7 @@ Aims
 - Simplicity
 - Tmux friendly
 - Vim integration
-- Syncing capabilities with Wunderlist (when official API comes out)
+- Syncing capailities with Wunderlist (when official API comes out)
 - Recursive sub-listing
 
 
