@@ -130,6 +130,9 @@ def removeItem(item):
     if isNumber(item):
         global tasks
         tasks[:] = [t for t in tasks if t.get('ID') != int(item)]
+    elif item.lower() == "all":
+        global tasks
+        tasks = []
     else:
         global tasks
         tasks[:] = [t for t in tasks if t.get('task') != item]
@@ -264,12 +267,14 @@ def drawText():
 
 def drawTasks():
     '''Draws each task in the task list following it's ID.'''
+    i = 0
     for task in tasks:
         t = task['task']
         ID = task['ID']
         tags = task['tags']
         s = wrapString(str(ID) + ". " + t)
-        win.addstr(5 + 2*ID, LI, s)
+        win.addstr(5 + i + 2*ID, LI, s)
+        i += s.count('\n')-1
 
 
 def drawTitle():
