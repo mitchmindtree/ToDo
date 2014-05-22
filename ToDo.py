@@ -25,11 +25,49 @@ import os, sys, json
 import curses
 import curses.textpad as textpad
 from pprint import pprint
+import textwrap
 
 win = curses.initscr()
 HEIGHT, WIDTH = win.getmaxyx()
 text = ""
 tasks = []
+LI = 4
+RI = 4
+
+
+def wrapString(s, leftIndent=LI, rightIndent=RI):
+    lines = textwrap.wrap(s, (WIDTH-rightIndent) - leftIndent)
+    new = ""
+    for line in lines:
+        new = new+line+'\n'
+        for i in range(LI):
+            new = new+' '
+    return new[:-1]
+
+
+def confirm(msg):
+    win.clear()
+    drawRectangle()
+    resetCursor()
+    drawMessage(wrapString(msg + " (y/n)"))
+    k = win.getch()
+    win.clear()
+    if chr(k).lower() == "y":
+        return True
+    else:
+        return False
+
+
+def drawMessage(msg):
+    win.addstr(int(HEIGHT/2)-int(msg.count('\n')/2), LI, msg)
+
+
+def isNumber(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
 
 
 def getJsonFP():
@@ -62,9 +100,24 @@ def safeExit():
     sys.exit(0)
 
 
-def addItemToList(item):
+def addItem(item):
     item = stripSpaceFromEnds(item)
-    tasks.append({ "task" : item, "ID" : len(tasks), "tags" : [] })
+    tasks.append({ 'task' : item, 'ID' : len(tasks), 'tags' : [] })
+    saveTasks()
+
+
+def removeItem(item):
+    item = stripSpaceFromEnds(item)
+    if not confirm("Are you sure you wish to remove '"+item+"'?"):
+        return
+    if isNumber(item):
+        global tasks
+        tasks[:] = [t for t in tasks if t.get('ID') != int(item)]
+    else:
+        global tasks
+        tasks[:] = [t for t in tasks if t.get('task') != item]
+    for i in range(len(tasks)):
+        tasks[i]['ID'] = i
     saveTasks()
 
 
@@ -76,9 +129,16 @@ def checkForExit():
 
 def checkForAdd():
     if text.lower()[:4] == "add ":
-        addItemToList(text[4:])
+        addItem(text[4:])
     elif text.lower()[:2] == "+ ":
-        addItemToList(text[2:])
+        addItem(text[2:])
+
+
+def checkForRemove():
+    if text.lower()[:3] == "rm ":
+        removeItem(text[3:])
+    elif text.lower()[:7] == "remove ":
+        removeItem(text[7:])
 
 
 def stripSpaceFromEnds(s):
@@ -94,19 +154,23 @@ def executeText():
     text = stripSpaceFromEnds(text)
     checkForExit()
     checkForAdd()
+    checkForRemove()
 
 
 def removeCharFromText():
+    '''Remove last character from 'text' buffer.'''
     global text
     text = text[:-1]
 
 
 def addToText(event):
+    '''Add character to 'text' buffer.'''
     global text
     text = text+event
 
 
 def checkEvent(event):
+    '''Check for key event.'''
     if event == ord("\n"):
         executeText()
         resetCursor()
@@ -118,28 +182,33 @@ def checkEvent(event):
 
 
 def drawText():
+    '''Draw the 'text' buffer to the textbox.'''
     win.addstr(HEIGHT-2, 2, text)
 
 
 def drawTasks():
+    '''Draws each task in the task list following it's ID.'''
     for task in tasks:
         t = task['task']
         ID = task['ID']
         tags = task['tags']
-        s = str(ID) + ". " + t
-        win.addstr(5 + 2*ID, 4, s)
+        s = wrapString(str(ID) + ". " + t)
+        win.addstr(5 + 2*ID, LI, s)
 
 
 def drawTitle():
-    win.addstr(2, 4, "ToDo List")
-    win.addstr(3, 4, "---------")
+    '''Draws 'ToDo List' title.'''
+    win.addstr(2, LI, "ToDo List")
+    win.addstr(3, LI, "---------")
 
 
 def drawRectangle():
+    '''Draws textbox rectangle.'''
     textpad.rectangle(win, HEIGHT-3, 1, HEIGHT-1, WIDTH-2)
 
 
 def resetCursor():
+    '''Resets the 'text' buffer and moves cursor to start of textbox.'''
     global text
     text = ""
     win.move(HEIGHT-2, 2)
