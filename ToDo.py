@@ -25,17 +25,26 @@ import os, sys, json
 import curses
 import curses.textpad as textpad
 from pprint import pprint
+from operator import itemgetter
 import textwrap
 
 win = curses.initscr()
 HEIGHT, WIDTH = win.getmaxyx()
 text = ""
+parent = None
 tasks = []
 LI = 4
 RI = 4
 
 
+def sortTasks():
+    '''Sort tasks by ID.'''
+    global tasks
+    tasks = sorted(tasks, key=itemgetter('ID'))
+
+
 def wrapString(s, leftIndent=LI, rightIndent=RI):
+    '''Soft warp string 's' at leftIndent and rightIndent.'''
     lines = textwrap.wrap(s, (WIDTH-rightIndent) - leftIndent)
     new = ""
     for line in lines:
@@ -46,6 +55,7 @@ def wrapString(s, leftIndent=LI, rightIndent=RI):
 
 
 def confirm(msg):
+    '''Ask for comfirmation.'''
     win.clear()
     drawRectangle()
     resetCursor()
@@ -59,10 +69,12 @@ def confirm(msg):
 
 
 def drawMessage(msg):
+    '''Draw msg in center of screen.'''
     win.addstr(int(HEIGHT/2)-int(msg.count('\n')/2), LI, msg)
 
 
 def isNumber(s):
+    '''Is string a number.'''
     try:
         int(s)
         return True
@@ -75,6 +87,7 @@ def getJsonFP():
 
 
 def loadTasks():
+    '''Load tasks from .Todo.json file. If doesn't exist, make it.'''
     try:
         f = open(getJsonFP(), 'r')
         data = json.loads(f.read())
@@ -88,25 +101,29 @@ def loadTasks():
 
 
 def saveTasks():
+    '''Save tasks to .ToDo.json file.'''
+    sortTasks()
     f = open(getJsonFP(), 'w')
     json.dump(tasks, f)
     f.close()
 
 
 def safeExit():
-    #if tasks:
-    #    saveTasks()
     curses.endwin()
     sys.exit(0)
 
 
 def addItem(item):
+    '''Add item to the list of tasks.'''
     item = stripSpaceFromEnds(item)
+    if isNumber(item):
+        return
     tasks.append({ 'task' : item, 'ID' : len(tasks), 'tags' : [] })
     saveTasks()
 
 
 def removeItem(item):
+    '''Remove item from the list of tasks.'''
     item = stripSpaceFromEnds(item)
     if not confirm("Are you sure you wish to remove '"+item+"'?"):
         return
@@ -121,13 +138,60 @@ def removeItem(item):
     saveTasks()
 
 
+def replacePosWithInt(item):
+    '''Replace string position indicators with associated int.'''
+    item.replace('last', str(len(tasks)-1))
+    item.replace('Last', str(len(tasks)-1))
+    item.replace('LAST', str(len(tasks)-1))
+    item.replace('end', str(len(tasks)-1))
+    item.replace('End', str(len(tasks)-1))
+    item.replace('END', str(len(tasks)-1))
+    item.replace('first', "0")
+    item.replace('First', "0")
+    item.replace('FIRST', "0")
+    item.replace('begin', "0")
+    item.replace('Begin', "0")
+    item.replace('BEGIN', "0")
+    item.replace('front', "0")
+    item.replace('Front', "0")
+    item.replace('FRONT', "0")
+    return item
+
+
+def moveItem(item):
+    '''Move item in first position to item in second position.'''
+    item = stripSpaceFromEnds(item)
+    item = replacePosWithInt(item)
+    IDs = item.split(" ")
+    if len(IDs) != 2:
+        return
+    elif not isNumber(IDs[0]) or not isNumber(IDs[1]):
+        return
+    IDa = int(IDs[0])
+    IDb = int(IDs[1])
+    if not IDa < len(tasks) and not IDa >= 0 or IDa == IDb:
+        return
+    if IDb >= len(tasks):
+        IDb = len(tasks)-1
+    elif IDb < 0:
+        IDb = 0
+    for t in tasks:
+        if t.get('ID') == IDa:
+            t['ID'] = IDb
+        elif t.get('ID') >= IDb and not t.get('ID') > IDa:
+            t['ID'] = t['ID']+1
+    saveTasks()
+
+
 def checkForExit():
+    '''Check text buffer for indication to exit program.'''
     check = text.lower()
     if check == "q" or check == "x" or check == "exit" or check == "quit":
         safeExit()
 
 
 def checkForAdd():
+    '''Check text buffer for indication to add task.'''
     if text.lower()[:4] == "add ":
         addItem(text[4:])
     elif text.lower()[:2] == "+ ":
@@ -135,13 +199,23 @@ def checkForAdd():
 
 
 def checkForRemove():
+    '''Check text buffer for indication to remove task.'''
     if text.lower()[:3] == "rm ":
         removeItem(text[3:])
     elif text.lower()[:7] == "remove ":
         removeItem(text[7:])
 
 
+def checkForMove():
+    '''Check text buffer for indication to move task.'''
+    if text.lower()[:3] == "mv ":
+        moveItem(text[3:])
+    elif text.lower()[:5] == "move ":
+        moveItem(text[5:])
+
+
 def stripSpaceFromEnds(s):
+    '''Remove whitespace from front and back of string.'''
     while s[-1:] == " ":
         s = s[:-1]
     while s[:1] == " ":
@@ -150,11 +224,13 @@ def stripSpaceFromEnds(s):
 
 
 def executeText():
+    '''Check text buffer for meaning.'''
     global text
     text = stripSpaceFromEnds(text)
     checkForExit()
     checkForAdd()
     checkForRemove()
+    checkForMove()
 
 
 def removeCharFromText():
@@ -234,13 +310,9 @@ def mainLoop():
             drawAll()
 
 
-def setupCurses():
+def setup():
     curses.noecho()
     win.keypad(1)
-
-
-def setup():
-    setupCurses()
     global tasks
     tasks = loadTasks()
 
