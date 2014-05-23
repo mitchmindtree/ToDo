@@ -21,58 +21,23 @@ Options:
 '''
 
 
-import os, sys, json
-import curses
+import os, sys, json, curses, textwrap
 import curses.textpad as textpad
 from pprint import pprint
-from utils import wrapString, confirm, isNumber, replacePosWithInt
+from utils import wrapString, confirm, isNumber, replacePosWithInt, stripSpaceFromEnds
 from Task import Task
 
 win = curses.initscr()
 HEIGHT, WIDTH = win.getmaxyx()
 text = ""
-parent = None
-tasks = []
 master = Task()
+current = master
 LI = 4
 RI = 4
 
 
-def sortTasks():
-    '''Sort tasks by ID.'''
-    global tasks
-    tasks = sorted(tasks, key=itemgetter('ID'))
-
-
-def drawMessage(msg):
-    '''Draw msg in center of screen.'''
-    win.addstr(int(HEIGHT/2)-int(msg.count('\n')/2), LI, msg)
-
-
 def getJsonFP():
     return os.path.join(os.path.expanduser("~"), ".ToDo.json")
-
-
-def loadTasks():
-    '''Load tasks from .Todo.json file. If doesn't exist, make it.'''
-    try:
-        f = open(getJsonFP(), 'r')
-        data = json.loads(f.read())
-        f.close()
-        return data
-    except Exception, e:
-        f = open(getJsonFP(), 'w')
-        json.dump([], f)
-        f.close()
-        return loadTasks()
-
-
-def saveTasks():
-    '''Save tasks to .ToDo.json file.'''
-    sortTasks()
-    f = open(getJsonFP(), 'w')
-    json.dump(tasks, f)
-    f.close()
 
 
 def safeExit():
@@ -80,107 +45,119 @@ def safeExit():
     sys.exit(0)
 
 
-def addItem(item):
-    '''Add item to the list of tasks.'''
-    item = stripSpaceFromEnds(item)
-    if isNumber(item):
-        return
-    tasks.append({ 'task' : item, 'ID' : len(tasks), 'tasks' : [] })
-    saveTasks()
-
-
-def removeItem(item):
-    '''Remove item from the list of tasks.'''
-    item = stripSpaceFromEnds(item)
-    if not confirm("Are you sure you wish to remove '"+item+"'?", win):
-        return
-    if isNumber(item):
-        global tasks
-        tasks[:] = [t for t in tasks if t.get('ID') != int(item)]
-    elif item.lower() == "all":
-        global tasks
-        tasks = []
-    else:
-        global tasks
-        tasks[:] = [t for t in tasks if t.get('task') != item]
-    for i in range(len(tasks)):
-        tasks[i]['ID'] = i
-    saveTasks()
-
-
-def moveItem(item):
-    '''Move item in first position to item in second position.'''
-    item = stripSpaceFromEnds(item)
-    item = replacePosWithInt(item)
-    IDs = item.split(" ")
-    if len(IDs) != 2:
-        return
-    elif not isNumber(IDs[0]) or not isNumber(IDs[1]):
-        return
-    IDa = int(IDs[0])
-    IDb = int(IDs[1])
-    if not IDa < len(tasks) and not IDa >= 0 or IDa == IDb:
-        return
-    if IDb >= len(tasks):
-        IDb = len(tasks)-1
-    elif IDb < 0:
-        IDb = 0
-    for t in tasks:
-        if t.get('ID') == IDa:
-            t['ID'] = IDb
-        elif t.get('ID') >= IDb and not t.get('ID') > IDa:
-            t['ID'] = t['ID']+1
-    saveTasks()
-
-
 def checkForExit():
     '''Check text buffer for indication to exit program.'''
     check = text.lower()
     if check == "q" or check == "x" or check == "exit" or check == "quit":
         safeExit()
+    else:
+        return False
 
 
 def checkForAdd():
     '''Check text buffer for indication to add task.'''
     if text.lower()[:4] == "add ":
-        addItem(text[4:])
+        s = text[4:]
     elif text.lower()[:2] == "+ ":
-        addItem(text[2:])
+        s = text[2:]
+    else:
+        return False
+    s = stripSpaceFromEnds(s)
+    if isNumber(s):
+        return False
+    current.addTask(s)
+    master.saveTasks(getJsonFP())
+    return True
 
 
 def checkForRemove():
     '''Check text buffer for indication to remove task.'''
     if text.lower()[:3] == "rm ":
-        removeItem(text[3:])
+        s = text[3:]
     elif text.lower()[:7] == "remove ":
-        removeItem(text[7:])
+        s = text[7:]
+    else:
+        return False
+    s = stripSpaceFromEnds(s)
+    if not confirm("Are you sure you wish to remove '"+s+"'?", win):
+        return False
+    current.removeTask(s)
+    master.saveTasks(getJsonFP())
+    return True
 
 
 def checkForMove():
     '''Check text buffer for indication to move task.'''
     if text.lower()[:3] == "mv ":
-        moveItem(text[3:])
+        s = text[3:]
     elif text.lower()[:5] == "move ":
-        moveItem(text[5:])
+        s = text[5:]
+    else:
+        return False
+    s = stripSpaceFromEnds(s)
+    s = replacePosWithInt(s)
+    IDs = s.split(" ")
+    if len(IDs) != 2:
+        return False
+    elif not isNumber(IDs[0]) or not isNumber(IDs[1]):
+        return False
+    IDa = int(IDs[0])
+    IDb = int(IDs[1])
+    current.moveTask(IDa, IDb)
+    master.saveTasks(getJsonFP())
+    return True
 
 
-def stripSpaceFromEnds(s):
-    '''Remove whitespace from front and back of string.'''
-    while s[-1:] == " ":
-        s = s[:-1]
-    while s[:1] == " ":
-        s = s[1:]
-    return s
+def checkForOpen():
+    '''Check text buffer for indication to open a Subtask as main task.'''
+    if text.lower()[:2] == "o ":
+        s = text[2:]
+    elif text.lower()[:5] == "open ":
+        s = text[5:]
+    else:
+        return False
+    s = stripSpaceFromEnds(s)
+    if isNumber(s) and int(s) >= 0 and int(s) < len(current.get('Subtasks')):
+        openTask(current.get('Subtasks')[int(s)])
+    else:
+        for t in current.get('Subtasks'):
+            if t.get('Task') == s:
+                openTask(t)
+    return True
+
+
+def openTask(task):
+    global current
+    current = task
+
+
+def checkForClose():
+    '''Check text buffer for indication to close task and open parent.'''
+    if text.lower() == "cl":
+        closeTask()
+    elif text.lower() == "close":
+        closeTask()
+    elif text.lower() == "b":
+        closeTask()
+    elif text.lower() == "back":
+        closeTask()
+
+
+def closeTask():
+    global current
+    current = current.parent
 
 
 def executeText():
     '''Check text buffer for meaning.'''
     global text
     text = stripSpaceFromEnds(text)
-    checkForExit()
-    checkForAdd()
-    checkForRemove()
-    checkForMove()
+    if checkForExit(): return
+    elif checkForAdd(): return
+    elif checkForRemove(): return
+    elif checkForMove(): return
+    elif checkForOpen(): return
+    checkForClose()
 
 
 def removeCharFromText():
@@ -212,22 +189,14 @@ def drawText():
     win.addstr(HEIGHT-2, 2, text)
 
 
-def drawTasks():
-    '''Draws each task in the task list following it's ID.'''
-    i = 0
-    for task in tasks:
-        t = task['task']
-        ID = task['ID']
-        subtasks = task['tasks']
-        s = wrapString(str(ID) + ". " + t)
-        win.addstr(5 + i + 2*ID, LI, s)
-        i += s.count('\n')-1
-
-
 def drawTitle():
     '''Draws 'ToDo List' title.'''
-    win.addstr(2, LI, "ToDo List")
-    win.addstr(3, LI, "---------")
+    s = textwrap.wrap(current.get('Task'), WIDTH-(LI+RI+3))[0]+"..."
+    win.addstr(2, LI, s)
+    underline = ""
+    for i in range(len(s)):
+        underline = underline+"-"
+    win.addstr(3, LI, underline)
 
 
 def drawRectangle():
@@ -246,7 +215,7 @@ def drawAll():
     '''Draw everything.'''
     drawTitle()
     drawRectangle()
-    drawTasks()
+    current.drawTasks(win)
     drawText()
 
 
@@ -265,8 +234,7 @@ def mainLoop():
 def setup():
     curses.noecho()
     win.keypad(1)
-    global tasks
-    tasks = loadTasks()
+    current.loadTasks(getJsonFP())
 
 
 def main():

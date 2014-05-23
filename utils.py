@@ -16,8 +16,9 @@ LI = 4
 RI = 4
 
 
-def wrapString(s, leftIndent=LI, rightIndent=RI):
+def wrapString(s, win, leftIndent=LI, rightIndent=RI):
     '''Soft warp string 's' at leftIndent and rightIndent.'''
+    WIDTH = win.getmaxyx()[1]
     lines = textwrap.wrap(s, (WIDTH-rightIndent) - leftIndent)
     new = ""
     for line in lines:
@@ -32,13 +33,19 @@ def confirm(msg, win):
     win.clear()
     drawRectangle()
     resetCursor()
-    drawMessage(wrapString(msg + " (y/n)"))
+    drawMessage(wrapString(msg + " (y/n)", win))
     k = win.getch()
     win.clear()
     if chr(k).lower() == "y":
         return True
     else:
         return False
+
+
+def drawMessage(msg):
+    '''Draw msg in center of screen.'''
+    win.addstr(int(HEIGHT/2)-int(msg.count('\n')/2), LI, msg)
+
 
 
 def isNumber(s):
@@ -68,4 +75,14 @@ def replacePosWithInt(s):
     s.replace('Front', "0")
     s.replace('FRONT', "0")
     return s
+
+
+def stripSpaceFromEnds(s):
+    '''Remove whitespace from front and back of string.'''
+    while s[-1:] == " ":
+        s = s[:-1]
+    while s[:1] == " ":
+        s = s[1:]
+    return s
+
 
