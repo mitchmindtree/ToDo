@@ -21,17 +21,17 @@ Options:
 '''
 
 
-import os, sys, json, curses, textwrap
-import curses.textpad as textpad
+import os, sys, json, curses 
 from pprint import pprint
-from utils import wrapString, confirm, isNumber, replacePosWithInt, stripSpaceFromEnds
+from utils import *
 from Task import Task
+from CommandBox import CommandBox
 
-win = curses.initscr()
-HEIGHT, WIDTH = win.getmaxyx()
-text = ""
-master = Task()
-current = master
+win = curses.initscr()  # Curses Window
+cbox = CommandBox(win)  # Command Box
+master = Task(win)      # Master/Head Task
+current = master        # Current Task Reference
+
 LI = 4
 RI = 4
 
@@ -45,7 +45,7 @@ def safeExit():
     sys.exit(0)
 
 
-def checkForExit():
+def checkForExit(text):
     '''Check text buffer for indication to exit program.'''
     check = text.lower()
     if check == "q" or check == "x" or check == "exit" or check == "quit":
@@ -54,7 +54,7 @@ def checkForExit():
         return False
 
 
-def checkForAdd():
+def checkForAdd(text):
     '''Check text buffer for indication to add task.'''
     if text.lower()[:4] == "add ":
         s = text[4:]
@@ -70,7 +70,7 @@ def checkForAdd():
     return True
 
 
-def checkForRemove():
+def checkForRemove(text):
     '''Check text buffer for indication to remove task.'''
     if text.lower()[:3] == "rm ":
         s = text[3:]
@@ -86,7 +86,7 @@ def checkForRemove():
     return True
 
 
-def checkForMove():
+def checkForMove(text):
     '''Check text buffer for indication to move task.'''
     if text.lower()[:3] == "mv ":
         s = text[3:]
@@ -108,7 +108,7 @@ def checkForMove():
     return True
 
 
-def checkForOpen():
+def checkForOpen(text):
     '''Check text buffer for indication to open a Subtask as main task.'''
     if text.lower()[:2] == "o ":
         s = text[2:]
@@ -126,12 +126,7 @@ def checkForOpen():
     return True
 
 
-def openTask(task):
-    global current
-    current = task
-
-
-def checkForClose():
+def checkForClose(text):
     '''Check text buffer for indication to close task and open parent.'''
     if text.lower() == "cl":
         closeTask()
@@ -143,6 +138,11 @@ def checkForClose():
         closeTask()
 
 
+def openTask(task):
+    global current
+    current = task
+
+
 def closeTask():
     global current
     current = current.parent
@@ -150,85 +150,45 @@ def closeTask():
 
 def executeText():
     '''Check text buffer for meaning.'''
-    global text
-    text = stripSpaceFromEnds(text)
-    if checkForExit(): return
-    elif checkForAdd(): return
-    elif checkForRemove(): return
-    elif checkForMove(): return
-    elif checkForOpen(): return
-    checkForClose()
-
-
-def removeCharFromText():
-    '''Remove last character from 'text' buffer.'''
-    global text
-    text = text[:-1]
-
-
-def addToText(event):
-    '''Add character to 'text' buffer.'''
-    global text
-    text = text+event
+    text = stripSpaceFromEnds(cbox.text)
+    if checkForExit(text): return
+    elif checkForAdd(text): return
+    elif checkForRemove(text): return
+    elif checkForMove(text): return
+    elif checkForOpen(text): return
+    checkForClose(text)
 
 
 def checkEvent(event):
     '''Check for key event.'''
     if event == ord("\n"):
         executeText()
-        resetCursor()
+        cbox.resetText()
     elif event == curses.KEY_BACKSPACE or int(event) == 127:
-        removeCharFromText()
+        cbox.removeChar()
     else:
-        addToText(chr(event))
-    #win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
-
-
-def drawText():
-    '''Draw the 'text' buffer to the textbox.'''
-    win.addstr(HEIGHT-2, 2, text)
-
-
-def drawTitle():
-    '''Draws 'ToDo List' title.'''
-    s = textwrap.wrap(current.get('Task'), WIDTH-(LI+RI+3))[0]+"..."
-    win.addstr(2, LI, s)
-    underline = ""
-    for i in range(len(s)):
-        underline = underline+"-"
-    win.addstr(3, LI, underline)
-
-
-def drawRectangle():
-    '''Draws textbox rectangle.'''
-    textpad.rectangle(win, HEIGHT-3, 1, HEIGHT-1, WIDTH-2)
-
-
-def resetCursor():
-    '''Resets the 'text' buffer and moves cursor to start of textbox.'''
-    global text
-    text = ""
-    win.move(HEIGHT-2, 2)
+        cbox.addChar(chr(event))
 
 
 def drawAll():
     '''Draw everything.'''
-    drawTitle()
-    drawRectangle()
-    current.drawTasks(win)
-    drawText()
+    current.draw()
+    cbox.draw()
 
 
 def mainLoop():
     '''Run the main Program Loop. Quit with "q".'''
     drawAll()
-    resetCursor()
     while True:
         event = win.getch()
         if event:
             win.clear()
-            checkEvent(event)
-            drawAll()
+            try:
+                checkEvent(event)
+                drawAll()
+            except ValueError, e:
+                drawMessage(str(e)+"\n    Press ENTER.", win)
+                win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
 
 
 def setup():

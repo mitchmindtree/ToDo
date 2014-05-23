@@ -62,8 +62,8 @@ To-Do
 - Vim plugin
 - Switch cursor between list and command line.
 - Add `cross` / `cr` to cross off tasks and move them to bottom (removes ID from draw)
-- Fix remove crash
 - Finish help command
+- Date & time for task (with reminder)
 
 
 Recursive List Structure

@@ -10,7 +10,8 @@ Module defining the Task class for ToDo.py
 
 import os, json
 from operator import itemgetter
-from utils import wrapString
+from utils import wrapString, isNumber
+import textwrap
 
 
 LI = 4
@@ -20,10 +21,11 @@ RI = 4
 class Task(dict):
     '''Main Task class for ToDo.py Has keys Task, ID and Subtasks'''
 
-    def __init__(self, Task=None, ID=None, Subtasks=None, Parent=None):
+    def __init__(self, win, Task=None, ID=None, Subtasks=None, Parent=None):
         self['Task'] = Task if Task is not None else "ToDo List"
         self['ID'] = ID if ID is not None else 0
         self['Subtasks'] = Subtasks if Subtasks is not None else []
+        self.win = win
         self.parent = Parent if Parent is not None else self
 
 
@@ -52,7 +54,8 @@ class Task(dict):
     def convertDictsToTasks(self):
         subtasks = []
         for d in self['Subtasks']:
-            subtasks.append(Task(Task = d.get('Task'),
+            subtasks.append(Task(self.win,
+                                 Task = d.get('Task'),
                                  ID = d.get('ID'),
                                  Subtasks = d.get('Subtasks'),
                                  Parent = self))
@@ -60,16 +63,32 @@ class Task(dict):
         self['Subtasks'] = subtasks
     
 
-    def drawTasks(self, win):
+    def drawTasks(self):
         '''Draws each task in 'Subtasks' following it's ID.'''
         i = 0
-        for task in self['Subtasks']:
+        for task in self.get('Subtasks'):
             t = task.get('Task')
             ID = task.get('ID')
             subtasks = task.get('Subtasks')
-            s = wrapString(str(ID) + ". " + t, win)
-            win.addstr(5 + i + 2*ID, LI, s)
+            s = wrapString(str(ID) + ". " + t, self.win)
+            self.win.addstr(5 + i + 2*ID, LI, s)
             i += s.count('\n')-1
+
+
+    def drawTitle(self):
+        '''Draws 'ToDo List' title.'''
+        w = self.win.getmaxyx()[1]
+        s = textwrap.wrap(self.get('Task'), w-(LI+RI+3))[0]+"..."
+        self.win.addstr(2, LI, s)
+        underline = ""
+        for i in range(len(s)):
+            underline = underline+"-"
+        self.win.addstr(3, LI, underline)
+
+
+    def draw(self):
+        self.drawTasks()
+        self.drawTitle()
 
 
     def sortTasks(self):
@@ -79,7 +98,7 @@ class Task(dict):
 
     def addTask(self, task):
         '''Add item to the list of tasks.'''
-        self['Subtasks'].append(Task(Task = task, ID = len(self['Subtasks']), Parent = self))
+        self['Subtasks'].append(Task(self.win, Task = task, ID = len(self['Subtasks']), Parent = self))
 
 
     def addTaskByID(self, ID, task):

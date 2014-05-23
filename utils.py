@@ -8,7 +8,6 @@ Utility functions for ToDo.py
 '''
 
 
-import os, sys
 import textwrap
 
 
@@ -31,9 +30,9 @@ def wrapString(s, win, leftIndent=LI, rightIndent=RI):
 def confirm(msg, win):
     '''Ask for comfirmation.'''
     win.clear()
-    drawRectangle()
-    resetCursor()
-    drawMessage(wrapString(msg + " (y/n)", win))
+    #drawRectangle()
+    #resetCursor()
+    drawMessage(wrapString(msg + " (y/n)", win), win)
     k = win.getch()
     win.clear()
     if chr(k).lower() == "y":
@@ -42,9 +41,10 @@ def confirm(msg, win):
         return False
 
 
-def drawMessage(msg):
+def drawMessage(msg, win):
     '''Draw msg in center of screen.'''
-    win.addstr(int(HEIGHT/2)-int(msg.count('\n')/2), LI, msg)
+    h = win.getmaxyx()[0]
+    win.addstr(int(h/2)-int(msg.count('\n')/2), LI, msg)
 
 
 
