@@ -60,6 +60,10 @@ To-Do
 - Add textbox scrolling.
 - Redraw upon resizing terminal pane.
 - Vim plugin
+- Switch cursor between list and command line.
+- Add `cross` / `cr` to cross off tasks and move them to bottom (removes ID from draw)
+- Fix remove crash
+- Finish help command
 
 
 Recursive List Structure
