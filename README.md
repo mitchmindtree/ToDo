@@ -57,8 +57,6 @@ To-Do
 -----
 
 - Find tasks containing string and display as child list.
-- Add textbox scrolling.
-- Redraw upon resizing terminal pane.
 - Vim plugin
 - Switch cursor between list and command line.
 - Add `cross` / `cr` to cross off tasks and move them to bottom (removes ID from draw)

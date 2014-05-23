@@ -16,7 +16,8 @@ class CommandBox():
 
     def __init__(self, win):
         self.text = ""
-        self.vistext = ""
+        self.bl = 0
+        self.br = 0
         self.win = win
 
     def drawRect(self):
@@ -27,7 +28,7 @@ class CommandBox():
     def drawText(self):
         '''Draw vistext within rectangel.'''
         h = self.win.getmaxyx()[0]
-        self.win.addstr(h-2, 2, self.vistext)
+        self.win.addstr(h-2, 2, self.getVistext())
 
     def draw(self):
         '''Draw all CommandBox elements.'''
@@ -37,17 +38,17 @@ class CommandBox():
     def addChar(self, char):
         '''Add char to end of string and adjust vistext.'''
         self.text = self.text+char
-        self.vistext = self.vistext+char
-        if len(self.vistext) > self.getMaxVistextLen():
-            self.vistext = self.vistext[1:]
+        self.br += 1
+        if self.br - self.bl > self.getMaxVistextLen():
+            self.bl += 1
 
     def removeChar(self):
         '''Remove char from end of string and adjust vistext.'''
         self.text = self.text[:-1]
-        self.vistext = self.vistext[:-1]
         thresh = self.getRmVistextThresh()
-        if len(self.vistext) <= thresh:
-            self.vistext = self.text[:-thresh][-1:] + self.vistext
+        self.br -= 1
+        if self.br - self.bl <= thresh and len(self.text) > thresh:
+            self.bl -= 1
 
     def getMaxVistextLen(self):
         '''Get max drawable string length for self.vistext.'''
@@ -57,12 +58,30 @@ class CommandBox():
     def getRmVistextThresh(self):
         '''Get string length threshold for when to scroll back vistext.'''
         return int(self.getMaxVistextLen()*2/3)
+
+    def getVistext(self):
+        return self.text[self.bl:][:self.br]
+
+    def shuffleVistext(self, n):
+        if n < 0 and self.bl+n >= 0 and self.br+n >= self.getMaxVistextLen():
+            self.bl += n
+            self.br += n
+        elif n > 0 and self.bl+n <= self.text-self.getMaxVistextLen() and self.br+n <= len(self.text):
+            self.bl += n
+            self.br += n
+
+    def reset(self):
+        resetText()
+        resetCursor()
     
     def resetText(self):
         '''Resets the text buffers and moves cursor to start of textbox.'''
         h = self.win.getmaxyx()[0]
         self.text = ""
-        self.vistext = ""
+        self.bl = 0
+        self.br = 0
+
+    def resetCursor(self):
         self.win.move(h-2, 2)
         
 

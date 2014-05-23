@@ -57,7 +57,7 @@ def isNumber(s):
         return False
 
 
-def replacePosWithInt(s):
+def replacePosWithInt(s, tasks):
     '''Replace string position indicators with associated int.'''
     s.replace('last', str(len(tasks)-1))
     s.replace('Last', str(len(tasks)-1))

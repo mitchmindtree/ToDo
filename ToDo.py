@@ -95,7 +95,7 @@ def checkForMove(text):
     else:
         return False
     s = stripSpaceFromEnds(s)
-    s = replacePosWithInt(s)
+    s = replacePosWithInt(s, current.get('Subtasks'))
     IDs = s.split(" ")
     if len(IDs) != 2:
         return False
@@ -159,11 +159,33 @@ def executeText():
     checkForClose(text)
 
 
+def moveCursor(event):
+    h, w = win.getmaxyx()
+    ch, cw = win.getyx()
+    if event == curses.KEY_LEFT:
+        if cw <= w/5 and cbox.br > cbox.getMaxVistextLen():
+            cbox.shuffleVistext(-1)
+        if cw > 3:
+            win.move(h-2, cw-1)
+        else:
+            win.move(h-2, 2)
+    elif event == curses.KEY_RIGHT:
+        if cw >= 4*w/5 and cbox.bl < len(cbox.text)-cbox.getMaxVistextLen():
+            cbox.shuffleVistext(+1)
+        if cw < w-3:
+            win.move(h-2, cw+1)
+        else:
+            win.move(h-2, w-2)
+
 def checkEvent(event):
     '''Check for key event.'''
-    if event == ord("\n"):
+    if event == curses.KEY_RESIZE:
+        pass
+    if event == curses.KEY_LEFT or event == curses.KEY_RIGHT or event == curses.KEY_DOWN or event == curses.KEY_UP:
+        moveCursor(event)
+    elif event == ord("\n"):
         executeText()
-        cbox.resetText()
+        cbox.reset()
     elif event == curses.KEY_BACKSPACE or int(event) == 127:
         cbox.removeChar()
     else:

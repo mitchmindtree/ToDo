@@ -1,0 +1,52 @@
+# macos stuff
+.ds_store
+
+# json files.
+*.json
+
+# byte-compiled / optimized / dll files
+__pycache__/
+*.py[cod]
+
+# c extensions
+*.so
+
+# distribution / packaging
+.python
+env/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyc
+
+# installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# translations
+*.mo
+*.pot
+
+# django stuff:
+*.log
+
+# sphinx documentation
+docs/_build/
+
