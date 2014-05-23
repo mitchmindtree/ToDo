@@ -25,14 +25,15 @@ import os, sys, json
 import curses
 import curses.textpad as textpad
 from pprint import pprint
-from operator import itemgetter
-import textwrap
+from utils import wrapString, confirm, isNumber, replacePosWithInt
+from Task import Task
 
 win = curses.initscr()
 HEIGHT, WIDTH = win.getmaxyx()
 text = ""
 parent = None
 tasks = []
+master = Task()
 LI = 4
 RI = 4
 
@@ -43,43 +44,9 @@ def sortTasks():
     tasks = sorted(tasks, key=itemgetter('ID'))
 
 
-def wrapString(s, leftIndent=LI, rightIndent=RI):
-    '''Soft warp string 's' at leftIndent and rightIndent.'''
-    lines = textwrap.wrap(s, (WIDTH-rightIndent) - leftIndent)
-    new = ""
-    for line in lines:
-        new = new+line+'\n'
-        for i in range(LI):
-            new = new+' '
-    return new[:-1]
-
-
-def confirm(msg):
-    '''Ask for comfirmation.'''
-    win.clear()
-    drawRectangle()
-    resetCursor()
-    drawMessage(wrapString(msg + " (y/n)"))
-    k = win.getch()
-    win.clear()
-    if chr(k).lower() == "y":
-        return True
-    else:
-        return False
-
-
 def drawMessage(msg):
     '''Draw msg in center of screen.'''
     win.addstr(int(HEIGHT/2)-int(msg.count('\n')/2), LI, msg)
-
-
-def isNumber(s):
-    '''Is string a number.'''
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
 
 
 def getJsonFP():
@@ -118,14 +85,14 @@ def addItem(item):
     item = stripSpaceFromEnds(item)
     if isNumber(item):
         return
-    tasks.append({ 'task' : item, 'ID' : len(tasks), 'tags' : [] })
+    tasks.append({ 'task' : item, 'ID' : len(tasks), 'tasks' : [] })
     saveTasks()
 
 
 def removeItem(item):
     '''Remove item from the list of tasks.'''
     item = stripSpaceFromEnds(item)
-    if not confirm("Are you sure you wish to remove '"+item+"'?"):
+    if not confirm("Are you sure you wish to remove '"+item+"'?", win):
         return
     if isNumber(item):
         global tasks
@@ -139,26 +106,6 @@ def removeItem(item):
     for i in range(len(tasks)):
         tasks[i]['ID'] = i
     saveTasks()
-
-
-def replacePosWithInt(item):
-    '''Replace string position indicators with associated int.'''
-    item.replace('last', str(len(tasks)-1))
-    item.replace('Last', str(len(tasks)-1))
-    item.replace('LAST', str(len(tasks)-1))
-    item.replace('end', str(len(tasks)-1))
-    item.replace('End', str(len(tasks)-1))
-    item.replace('END', str(len(tasks)-1))
-    item.replace('first', "0")
-    item.replace('First', "0")
-    item.replace('FIRST', "0")
-    item.replace('begin', "0")
-    item.replace('Begin', "0")
-    item.replace('BEGIN', "0")
-    item.replace('front', "0")
-    item.replace('Front', "0")
-    item.replace('FRONT', "0")
-    return item
 
 
 def moveItem(item):
@@ -271,7 +218,7 @@ def drawTasks():
     for task in tasks:
         t = task['task']
         ID = task['ID']
-        tags = task['tags']
+        subtasks = task['tasks']
         s = wrapString(str(ID) + ". " + t)
         win.addstr(5 + i + 2*ID, LI, s)
         i += s.count('\n')-1
