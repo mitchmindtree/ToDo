@@ -17,6 +17,10 @@ Aims
 Usage
 -----
 
+Run it with:
+
+    $ python ToDo.py
+
 See the list of commands with `h`, `help` or `?`
 
 Add Tasks with `add` or `+`
@@ -60,7 +64,6 @@ To-Do
 - Vim plugin
 - Switch cursor between list and command line.
 - Add `cross` / `cr` to cross off tasks and move them to bottom (removes ID from draw)
-- Finish help command
 - Date & time for task (with reminder)
 
 
