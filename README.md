@@ -23,7 +23,7 @@ Usage
 Download and run it with:
 
     $ git clone https://github.com/mitchmindtree/ToDo-CLI.git ~/
-    $ cd ~/ToDo
+    $ cd ~/ToDo-CLI
     $ python ToDo.py
 
 
