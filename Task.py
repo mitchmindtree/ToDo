@@ -10,7 +10,7 @@ Module defining the Task class for ToDo.py
 
 import os, json
 from operator import itemgetter
-from utils import wrapString, isNumber
+from utils import wrapString, isNumber, confirm
 from EventChecker import EventChecker
 import textwrap
 
@@ -155,19 +155,25 @@ class Task(dict):
 
     def removeTask(self, task):
         '''Remove task from subtasks.'''
+        if not isNumber(task):
+            for t in self.get('Subtasks'):
+                if t.get('Task') == task:
+                    task = t.get('ID')
+                    break
+        if not isNumber(task) or len(self.get('Subtasks')[int(task)].get('Subtasks')) > 0:
+            if not confirm("Are you sure you wish to remove '"+task+"'?", self.win):
+                return
         if isNumber(task):
             self['Subtasks'] = [t for t in self.get('Subtasks') if t.get('ID') != int(task)]
         elif task.lower() == "all" or task.lower() == "-a":
             self['Subtasks'] = []
-        else:
-            self['Subtasks'] = [t for t in self.get('Subtasks') if t.get('Task') != task]
         for i in range(len(self['Subtasks'])):
             self['Subtasks'][i]['ID'] = i
 
 
     def moveTask(self, IDa, IDb):
         '''Move task in position 'IDa' to position 'IDb'.'''
-        if not IDa < len(self.get('Subtasks')) and not IDa >= 0 or IDa == IDb:
+        if IDa > len(self.get('Subtasks')) or IDa < 0 or IDa == IDb:
             return
         if IDb >= len(self.get('Subtasks')):
             IDb = len(self.get('Subtasks'))-1

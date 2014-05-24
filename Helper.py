@@ -10,7 +10,7 @@ Displays commands.
 '''
 
 
-import os
+from os import path
 from EventChecker import EventChecker
 from utils import drawMessage
 import curses
@@ -57,7 +57,7 @@ class Helper():
             self.scroll -= 1
 
     def getHelpTxt(self):
-        return open(os.path.join(os.getcwd(), "help.txt"), 'r')
+        return open(path.join(path.dirname(path.realpath(__file__)), "help.txt"), 'r')
 
 
 

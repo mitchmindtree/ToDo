@@ -94,8 +94,6 @@ def checkForRemove(text):
     else:
         return False
     s = stripSpaceFromEnds(s)
-    if not confirm("Are you sure you wish to remove '"+s+"'?", win):
-        return False
     current.removeTask(s)
     master.saveTasks(getJsonFP())
     return True
