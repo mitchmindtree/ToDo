@@ -8,7 +8,9 @@ Command Box for ToDo.py
 '''
 
 
+import curses
 import curses.textpad as textpad
+from EventChecker import EventChecker
 
 
 class CommandBox():
@@ -19,6 +21,15 @@ class CommandBox():
         self.bl = 0
         self.br = 0
         self.win = win
+        self.ec = EventChecker(win)
+        self.ec.addTrigger(self.removeChar, 127) #backspace
+        self.ec.addTrigger(self.addChar, 'rest')
+
+    def check(self):
+        '''Wait and check for an event (keyboard or other).'''
+        event = self.win.getch()
+        event = self.ec.check(event)
+        return event
 
     def drawRect(self):
         '''Draws commandbox rectangle.'''
@@ -40,6 +51,8 @@ class CommandBox():
 
     def addChar(self, char):
         '''Add char to end of string and adjust vistext.'''
+        char = chr(char)
+        self.win.addstr(24, 4, char)
         self.text = self.text+char
         self.br += 1
         if self.br - self.bl > self.getMaxVistextLen():

@@ -26,55 +26,28 @@ from pprint import pprint
 from utils import *
 from Task import Task
 from CommandBox import CommandBox
+from Helper import Helper
 
-win = curses.initscr()  # Curses Window
-cbox = CommandBox(win)  # Command Box
-master = Task(win)      # Master/Head Task
-current = master        # Current Task Reference
+win = curses.initscr()          # Curses Window
+cbox = CommandBox(win)          # Command Box
+master = Task(win)              # Master/Head Task
+current = master                # Current Task Reference
+helper = Helper(win)
+
 
 LI = 4
 RI = 4
 
 
 def getJsonFP():
+    '''Return path to .ToDo.json file in user directory.'''
     return os.path.join(os.path.expanduser("~"), ".ToDo.json")
 
 
 def safeExit():
+    '''Exit safely and end the curses session.'''
     curses.endwin()
     sys.exit(0)
-
-
-def displayHelp():
-    win.addstr(25, 4, "IN!")
-    win.addstr(26, 4, "IN!")
-    win.addstr(27, 4, "IN!")
-    try:
-        h, w = win.getmaxyx()
-        f = open(os.path.join(os.getcwd(), "help.txt"), 'r')
-        fl = f.readlines()
-        l = 0
-        while True:
-            s = ""
-            for i in range(h-4):
-                if l+i < len(fl):
-                    s += fl[l+i]
-            win.erase()
-            win.addstr(2, 2, s)
-            event = win.getch()
-            if event == curses.KEY_RESIZE:
-                pass
-            elif event == curses.KEY_LEFT or event == curses.KEY_RIGHT or event == curses.KEY_DOWN or event == curses.KEY_UP:
-                pass
-            elif event == ord('\n'):
-                break
-            elif chr(event) == 'j' and l < len(fl)-(h-4):
-                l += 1
-            elif chr(event) == 'k' and l > 0:
-                l -= 1 
-    except Exception, e:
-        win.erase()
-        drawMessage(str(e)+"\n    Press ENTER.", win)
 
 
 def checkForExit(text):
@@ -90,7 +63,7 @@ def checkForHelp(text):
     '''Check text buffer for indication to display help.'''
     check = text.lower()
     if check == "h" or check == "?" or check == "help":
-        displayHelp()
+        helper.display()
         return True
     else:
         return False
@@ -150,6 +123,29 @@ def checkForMove(text):
     return True
 
 
+def checkForSwap(text):
+    '''Check text buffer for indication to swap tasks.'''
+    check = text.lower()
+    if check[:3] == "sw ":
+        s = text[3:]
+    elif check[:5] == "swap ":
+        s = text[5:]
+    else:
+        return False
+    s = stripSpaceFromEnds(s)
+    s = replacePosWithInt(s, current.get('Subtasks'))
+    IDs = s.split(" ")
+    if len(IDs) != 2:
+        return False
+    elif not isNumber(IDs[0]) or not isNumber(IDs[1]):
+        return False
+    IDa = int(IDs[0])
+    IDb = int(IDs[1])
+    current.swapTasks(IDa, IDb)
+    master.saveTasks(getJsonFP())
+    return True
+
+
 def checkForOpen(text):
     '''Check text buffer for indication to open a Subtask as main task.'''
     if text.lower()[:2] == "o ":
@@ -196,55 +192,63 @@ def closeTask():
 def executeText():
     '''Check text buffer for meaning.'''
     text = stripSpaceFromEnds(cbox.text)
-    if checkForExit(text): return
-    elif checkForHelp(text): return
-    elif checkForAdd(text): return
-    elif checkForRemove(text): return
-    elif checkForMove(text): return
-    elif checkForOpen(text): return
-    elif checkForClose(text): return
+    if checkForExit(text): pass
+    elif checkForHelp(text): pass
+    elif checkForAdd(text): pass
+    elif checkForRemove(text): pass
+    elif checkForMove(text): pass
+    elif checkForOpen(text): pass
+    elif checkForClose(text): pass
+    cbox.reset()
+    return False
 
 
-def checkEvent(event):
-    '''Check for key event.'''
-    if event == curses.KEY_RESIZE:
-        pass
-    elif event == curses.KEY_LEFT or event == curses.KEY_RIGHT or event == curses.KEY_DOWN or event == curses.KEY_UP:
-        pass
-    elif event == ord("\n"):
-        executeText()
-        cbox.reset()
-    elif event == curses.KEY_BACKSPACE or int(event) == 127:
-        cbox.removeChar()
-    else:
-        cbox.addChar(chr(event))
+def drawHelpPrompt():
+    if current == master and len(current.get('Subtasks')) == 0:
+        h, w = win.getmaxyx()
+        win.addstr(h-4, 2, "Type 'h', 'help' or 'Enter' for commands.")
 
 
 def drawAll():
     '''Draw everything.'''
     win.erase()
+    curses.curs_set(1) # Hide cursor
+    drawHelpPrompt()
     current.draw()
     cbox.draw()
+
+
+def nothing():
+    pass
 
 
 def mainLoop():
     '''Run the main Program Loop. Quit with "q".'''
     drawAll()
     while True:
-        event = win.getch()
+        event = cbox.check()
+        current.ec.check(event)
         if event:
-            try:
-                checkEvent(event)
-                drawAll()
-            except ValueError, e:
-                drawMessage(str(e)+"\n    Press ENTER.", win)
-                win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
+            drawAll()
+            #win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
+
+
+def setTriggers():
+    cbox.ec.addTrigger(executeText, 13)
+    cbox.ec.addTrigger(nothing, 10) #Ctrl+j
+    cbox.ec.addTrigger(nothing, 11) #Ctrl+k
+    cbox.ec.addTrigger(nothing, 23) #Ctrl+w
+    cbox.ec.addTrigger(nothing, 5)  #Ctrl+e
+    cbox.ec.addTrigger(nothing, 18)  #Ctrl+r
+    cbox.ec.addTrigger(nothing, 20)  #Ctrl+t
 
 
 def setup():
     curses.noecho()
+    curses.nonl()
     win.keypad(1)
     current.loadTasks(getJsonFP())
+    setTriggers()
 
 
 def main():
@@ -257,3 +261,4 @@ if __name__ == "__main__":
 
 
 safeExit()
+

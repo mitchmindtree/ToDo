@@ -11,6 +11,7 @@ Module defining the Task class for ToDo.py
 import os, json
 from operator import itemgetter
 from utils import wrapString, isNumber
+from EventChecker import EventChecker
 import textwrap
 
 
@@ -27,6 +28,10 @@ class Task(dict):
         self['Subtasks'] = Subtasks if Subtasks is not None else []
         self.win = win
         self.parent = Parent if Parent is not None else self
+        self.scroll = 0
+        self.ec = EventChecker(win)
+        self.ec.addTrigger(self.scrollDown, 10)
+        self.ec.addTrigger(self.scrollUp, 11)
 
 
     def saveTasks(self, path):
@@ -61,18 +66,61 @@ class Task(dict):
                                  Parent = self))
             subtasks[-1].convertDictsToTasks()
         self['Subtasks'] = subtasks
-    
 
-    def drawTasks(self):
-        '''Draws each task in 'Subtasks' following it's ID.'''
+
+    def scrollDown(self):
+        h = self.win.getmaxyx()[0]
+        length = len(self.getTaskListString().split('\n'))
+        if self.scroll < length and length-self.scroll > h-9:
+            self.scroll += 1
+
+
+    def scrollUp(self):
+        if self.scroll > 0:
+            self.scroll -= 1
+
+
+    def getTaskListString(self):
+        string = ""
         i = 0
+        h, w = self.win.getmaxyx()
+        taskIndent = ""
+        for space in range(LI):
+            taskIndent += " "
+        subtaskIndent = ""
+        for space in range(LI+7):
+            subtaskIndent += " "
         for task in self.get('Subtasks'):
             t = task.get('Task')
             ID = task.get('ID')
             subtasks = task.get('Subtasks')
             s = wrapString(str(ID) + ". " + t, self.win)
-            self.win.addstr(5 + i + 2*ID, LI, s)
-            i += s.count('\n')-1
+            #self.win.addstr(5 + i + 2*ID, LI, s)
+            i = s.count('\n')
+            string += taskIndent + s
+            n = 0
+            for st in subtasks:
+                if n < 3:
+                    i += 1
+                    stask = '- '+wrapString(st.get('Task'), self.win).split('\n')[0]
+                    if len(stask) > w-(LI+7+4+3):
+                        stask = stask[:w-(LI+7+4+3)]+"..."
+                    #self.win.addstr(5 + i + 2*ID, LI+7, stask)
+                    string += '\n' + subtaskIndent + stask
+                    n += 1
+            string += '\n\n'
+        return string
+
+
+    def drawTasks(self):
+        '''Draws each task in 'Subtasks' following it's ID.'''
+        h, w = self.win.getmaxyx()
+        lines = self.getTaskListString().split('\n')
+        s = ""
+        for i in range(h-9):
+            if self.scroll+i < len(lines):
+                s += lines[(self.scroll+i)%len(lines)]+'\n'
+        self.win.addstr(5, 0, s)
 
 
     def drawTitle(self):
@@ -141,4 +189,22 @@ class Task(dict):
         taskb = self.get('Subtasks')[IDb]
         self['Subtasks'][IDb] = self['Subtasks'][IDa]
         self['Subtasks'][IDa] = taskb
+
+
+    def editTask(self, task, cbox):
+        '''Edit the task name.'''
+        if isNumber(task):
+            if int(task) < len(self.get('Subtasks')) and int(task) >= 0:
+                t = self.get('Subtasks')[int(task)]
+        else:
+            for item in self.get('Subtasks'):
+                if item.get('Task') == task:
+                    t = item
+        cbox.text = t.get('Task')
+        cbox.bl = 0
+        cbox.br = len(cbox.text)
+        while True:
+            self.win.erase()
+            cbox.draw()
+            # EVENT CHECKER
 

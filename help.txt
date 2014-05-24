@@ -56,6 +56,9 @@
         cl
         close
 
+    Scroll down the list with ctrl+j
+    Scroll up the list with ctrl+k
+
     Quit the program:
         q
         x

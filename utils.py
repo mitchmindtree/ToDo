@@ -20,8 +20,12 @@ def wrapString(s, win, leftIndent=LI, rightIndent=RI):
     WIDTH = win.getmaxyx()[1]
     lines = textwrap.wrap(s, (WIDTH-rightIndent) - leftIndent)
     new = ""
+    n = 0
     for line in lines:
-        new = new+line+'\n'
+        new = new+line
+        n += 1
+        if n < len(lines):
+            new = new+'\n'
         for i in range(LI):
             new = new+' '
     return new[:-1]
@@ -30,8 +34,6 @@ def wrapString(s, win, leftIndent=LI, rightIndent=RI):
 def confirm(msg, win):
     '''Ask for comfirmation.'''
     win.clear()
-    #drawRectangle()
-    #resetCursor()
     drawMessage(wrapString(msg + " (y/n)", win), win)
     k = win.getch()
     win.clear()
