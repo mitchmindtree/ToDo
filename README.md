@@ -20,8 +20,10 @@ Usage
 -----
 
 
-Run it with:
+Download and run it with:
 
+    $ git clone https://github.com/mitchmindtree/ToDo-CLI.git ~/
+    $ cd ~/ToDo
     $ python ToDo.py
 
 
@@ -74,3 +76,4 @@ To-Do
 - Save list to ToDo.txt file
 
 
+github.com/mitchmindtree
