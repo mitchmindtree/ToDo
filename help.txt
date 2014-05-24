@@ -1,0 +1,63 @@
+    
+    
+    HELP
+    ====
+
+    Press ENTER to return at any time.
+    Use j or k to scroll up and down.
+
+    Usage
+    -----
+
+    Add <task> to the current list:
+
+        add <task>
+        + <task>
+    ie.
+        add A groovy new task.
+        + Some new really important thing.
+
+    Remove <task> with <id> from the current list:
+
+        remove <task>
+        remove <id>
+        rm <task>
+        rm <id>
+    ie.
+        remove That task I finished.
+        rm 0
+
+    Move task with <idA> to position <idB>:
+
+        move <idA> <idB>
+        mv <idA> <idB>
+    ie.
+        mv last 0
+        move 6 2
+
+    Swap tasks by id's:
+
+        swap <idA> <idB>
+        sw <idA> <idB>
+    ie.
+        sw 5 0
+
+    Open a <task> with <id>:
+
+        open <task>
+        o <id>
+    ie.
+        o 0
+        open 5
+        o A task.
+
+    Close current task and open it's parent:
+
+        cl
+        close
+
+    Quit the program:
+        q
+        x
+        quit
+        exit

@@ -21,7 +21,7 @@ Options:
 '''
 
 
-import os, sys, json, curses 
+import os, sys, json, curses
 from pprint import pprint
 from utils import *
 from Task import Task
@@ -45,11 +45,53 @@ def safeExit():
     sys.exit(0)
 
 
+def displayHelp():
+    win.addstr(25, 4, "IN!")
+    win.addstr(26, 4, "IN!")
+    win.addstr(27, 4, "IN!")
+    try:
+        h, w = win.getmaxyx()
+        f = open(os.path.join(os.getcwd(), "help.txt"), 'r')
+        fl = f.readlines()
+        l = 0
+        while True:
+            s = ""
+            for i in range(h-4):
+                if l+i < len(fl):
+                    s += fl[l+i]
+            win.erase()
+            win.addstr(2, 2, s)
+            event = win.getch()
+            if event == curses.KEY_RESIZE:
+                pass
+            elif event == curses.KEY_LEFT or event == curses.KEY_RIGHT or event == curses.KEY_DOWN or event == curses.KEY_UP:
+                pass
+            elif event == ord('\n'):
+                break
+            elif chr(event) == 'j' and l < len(fl)-(h-4):
+                l += 1
+            elif chr(event) == 'k' and l > 0:
+                l -= 1 
+    except Exception, e:
+        win.erase()
+        drawMessage(str(e)+"\n    Press ENTER.", win)
+
+
 def checkForExit(text):
     '''Check text buffer for indication to exit program.'''
     check = text.lower()
     if check == "q" or check == "x" or check == "exit" or check == "quit":
         safeExit()
+    else:
+        return False
+
+
+def checkForHelp(text):
+    '''Check text buffer for indication to display help.'''
+    check = text.lower()
+    if check == "h" or check == "?" or check == "help":
+        displayHelp()
+        return True
     else:
         return False
 
@@ -136,6 +178,9 @@ def checkForClose(text):
         closeTask()
     elif text.lower() == "back":
         closeTask()
+    else:
+        return False
+    return True
 
 
 def openTask(task):
@@ -152,11 +197,12 @@ def executeText():
     '''Check text buffer for meaning.'''
     text = stripSpaceFromEnds(cbox.text)
     if checkForExit(text): return
+    elif checkForHelp(text): return
     elif checkForAdd(text): return
     elif checkForRemove(text): return
     elif checkForMove(text): return
     elif checkForOpen(text): return
-    checkForClose(text)
+    elif checkForClose(text): return
 
 
 def checkEvent(event):
@@ -168,7 +214,6 @@ def checkEvent(event):
     elif event == ord("\n"):
         executeText()
         cbox.reset()
-        return
     elif event == curses.KEY_BACKSPACE or int(event) == 127:
         cbox.removeChar()
     else:
