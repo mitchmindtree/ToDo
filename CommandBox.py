@@ -27,6 +27,9 @@ class CommandBox():
 
     def drawText(self):
         '''Draw vistext within rectangel.'''
+        if self.text < self.getRmVistextThresh():
+            self.bl = 0
+            self.br = len(self.text)
         h = self.win.getmaxyx()[0]
         self.win.addstr(h-2, 2, self.getVistext())
 
@@ -43,6 +46,8 @@ class CommandBox():
             self.bl += 1
 
     def removeChar(self):
+        if not len(self.text):
+            return
         '''Remove char from end of string and adjust vistext.'''
         self.text = self.text[:-1]
         thresh = self.getRmVistextThresh()
@@ -63,12 +68,8 @@ class CommandBox():
         return self.text[self.bl:][:self.br]
 
     def shuffleVistext(self, n):
-        if n < 0 and self.bl+n >= 0 and self.br+n >= self.getMaxVistextLen():
-            self.bl += n
-            self.br += n
-        elif n > 0 and self.bl+n <= self.text-self.getMaxVistextLen() and self.br+n <= len(self.text):
-            self.bl += n
-            self.br += n
+        self.bl += n
+        self.br += n
 
     def reset(self):
         self.resetText()
