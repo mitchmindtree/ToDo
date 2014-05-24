@@ -1,7 +1,7 @@
 ToDo CLI
 ========
 
-My little ToDo CLI, currently in the middle of Dev.
+My little ToDo CLI! Much excite.
 
 
 Features
