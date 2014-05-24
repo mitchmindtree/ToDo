@@ -181,7 +181,7 @@ def checkEvent(event):
     '''Check for key event.'''
     if event == curses.KEY_RESIZE:
         pass
-    if event == curses.KEY_LEFT or event == curses.KEY_RIGHT or event == curses.KEY_DOWN or event == curses.KEY_UP:
+    elif event == curses.KEY_LEFT or event == curses.KEY_RIGHT or event == curses.KEY_DOWN or event == curses.KEY_UP:
         moveCursor(event)
     elif event == ord("\n"):
         executeText()

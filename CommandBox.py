@@ -71,8 +71,8 @@ class CommandBox():
             self.br += n
 
     def reset(self):
-        resetText()
-        resetCursor()
+        self.resetText()
+        self.resetCursor()
     
     def resetText(self):
         '''Resets the text buffers and moves cursor to start of textbox.'''
@@ -82,6 +82,7 @@ class CommandBox():
         self.br = 0
 
     def resetCursor(self):
+        h = self.win.getmaxyx()[0]
         self.win.move(h-2, 2)
         
 
