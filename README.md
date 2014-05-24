@@ -17,11 +17,14 @@ Aims
 Usage
 -----
 
+
 Run it with:
 
     $ python ToDo.py
 
-See the list of commands with `h`, `help` or `?`
+
+See the list of commands by entering `h`, `help` or `?`
+
 
 Add Tasks with `add` or `+`
 
@@ -55,6 +58,9 @@ Open a task with `open` or `o`
 Close the current task and open its parent with `close` or `cl`
 
 Quit the program with `q`, `x`, `quit` or `exit`
+
+Scroll down the list with ctrl+j
+Scroll up the list with ctrl+k
 
 
 To-Do

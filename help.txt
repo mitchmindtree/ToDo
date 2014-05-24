@@ -56,11 +56,29 @@
         cl
         close
 
-    Scroll down the list with ctrl+j
-    Scroll up the list with ctrl+k
-
     Quit the program:
+
         q
         x
         quit
         exit
+
+    Scroll down the list with ctrl+j
+    Scroll up the list with ctrl+k
+
+    Hidden Credits:
+
+        Are generally awesome.
+
+    The creator:
+
+        github.com/mitchmindtree
+
+    List ideas:
+
+        - Learn to program
+        - Super smash bros brawl
+        - Design deep neural network architectures
+        - Generally be a cool person
+        - Listen to Aphex Twin
+
