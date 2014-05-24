@@ -13,7 +13,7 @@ Features
 - Tmux friendly.
 - Resizable.
 - Vim integration (todo).
-- REST API? (todo)
+- REST API? (todo).
 
 
 Usage
