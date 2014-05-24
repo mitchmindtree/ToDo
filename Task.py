@@ -184,6 +184,9 @@ class Task(dict):
                 t['ID'] = IDb
             elif t.get('ID') >= IDb and not t.get('ID') > IDa:    
                 t['ID'] = t['ID']+1
+        self.sortTasks()
+        for i in range(len(self.get('Subtasks'))):
+            self.get('Subtasks')[i]['ID'] = i
 
 
     def swapTasks(self, IDa, IDb):

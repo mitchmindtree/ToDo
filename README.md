@@ -4,6 +4,9 @@ ToDo CLI
 My little ToDo CLI! Much excite.
 
 
+![ToDo Pic](https://raw.github.com/mitchmindtree/ToDo-CLI/master/todopic.png)
+
+
 Features
 --------
 
