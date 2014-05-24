@@ -4,14 +4,16 @@ ToDo CLI
 My little ToDo CLI, currently in the middle of Dev.
 
 
-Aims
-----
+Features
+--------
 
-- Tmux friendly
-- Vim integration
-- Syncing capailities with Wunderlist (when official API comes out)
-- Simplicity
-- Recursive sub-listing
+- Simplicity.
+- Add, remove, swap and move tasks.
+- Recursive, infinite sub-listing!
+- Tmux friendly.
+- Resizable.
+- Vim integration (todo).
+- REST API? (todo)
 
 
 Usage
@@ -59,42 +61,16 @@ Close the current task and open its parent with `close` or `cl`
 
 Quit the program with `q`, `x`, `quit` or `exit`
 
-Scroll down the list with ctrl+j
-Scroll up the list with ctrl+k
+Scroll down the list with `ctrl+j`
+Scroll up the list with `ctrl+k`
 
 
 To-Do
 -----
 
 - Vim plugin
-- Switch cursor between list and command line.
-- Add `cross` / `cr` to cross off tasks and move them to bottom (removes ID from draw)
+- Add `cross` / `cr` to cross off tasks and move them to bottom (puts line through text and removes ID from draw)
 - Date & time for task (with reminder)
+- Save list to ToDo.txt file
 
 
-Recursive List Structure
-------------------------
-
-    Tasks = [
-        {
-          Task : ""
-          id : 1
-          Tasks = [
-              {
-                Task : ""
-                id : 1
-                Tasks = [etc...]
-              }
-          ]
-        }
-        {
-          Task : ""
-          id : 2
-          Tasks = []
-        }
-        {
-          Task : ""
-          id : 3
-          Tasks = []
-        }
-    ]
