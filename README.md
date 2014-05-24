@@ -66,7 +66,6 @@ Scroll up the list with ctrl+k
 To-Do
 -----
 
-- Find tasks containing string and display as child list.
 - Vim plugin
 - Switch cursor between list and command line.
 - Add `cross` / `cr` to cross off tasks and move them to bottom (removes ID from draw)
@@ -83,7 +82,7 @@ Recursive List Structure
           Tasks = [
               {
                 Task : ""
-                id : 0
+                id : 1
                 Tasks = [etc...]
               }
           ]
