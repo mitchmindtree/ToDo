@@ -186,6 +186,7 @@ def checkEvent(event):
     elif event == ord("\n"):
         executeText()
         cbox.reset()
+        return
     elif event == curses.KEY_BACKSPACE or int(event) == 127:
         cbox.removeChar()
     else:
@@ -194,6 +195,7 @@ def checkEvent(event):
 
 def drawAll():
     '''Draw everything.'''
+    win.erase()
     current.draw()
     cbox.draw()
 
@@ -204,7 +206,6 @@ def mainLoop():
     while True:
         event = win.getch()
         if event:
-            win.clear()
             try:
                 checkEvent(event)
                 drawAll()
