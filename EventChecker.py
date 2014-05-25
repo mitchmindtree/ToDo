@@ -9,6 +9,7 @@ A Curses Event Checker for ToDo.py
 
 
 import curses
+from utils import drawMessage
 
 
 class EventChecker():
