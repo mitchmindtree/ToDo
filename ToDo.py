@@ -197,6 +197,7 @@ def executeText():
     elif checkForMove(text): pass
     elif checkForOpen(text): pass
     elif checkForClose(text): pass
+    elif text != '': current.addTask(text)
     cbox.reset()
     return False
 
