@@ -22,8 +22,9 @@ class CommandBox():
         self.br = 0
         self.win = win
         self.ec = EventChecker(win)
-        self.ec.addTrigger(self.removeChar, 127) #backspace
-        self.ec.addTrigger(self.addChar, 'rest')
+        self.ec.addTrigger(self.removeChar, 127) #backspace macos
+        self.ec.addTrigger(self.removeChar, curses.KEY_BACKSPACE) #other os
+        self.ec.addTrigger(self.addChar, 'rest') #all other keys
 
     def check(self):
         '''Wait and check for an event (keyboard or other).'''

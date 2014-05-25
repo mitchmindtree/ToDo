@@ -214,6 +214,7 @@ def drawAll():
     drawHelpPrompt()
     current.draw()
     cbox.draw()
+    ers = curses.erasechar()
 
 
 def nothing():
@@ -228,7 +229,8 @@ def mainLoop():
         current.ec.check(event)
         if event:
             drawAll()
-            #win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
+            #win.addstr(1, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(curses.KEY_BACKSPACE), curses.KEY_BACKSPACE & 255, curses.KEY_BACKSPACE, curses.KEY_BACKSPACE))
+            #win.addstr(3, 4, 'key: \'%s\' <=> %c <=> 0x%X <=> %d' % (curses.keyname(event), event & 255, event, event))
 
 
 def setTriggers():

@@ -43,6 +43,8 @@ class EventChecker():
                 self.trigs.get(str(event))()
             elif self.trigs.get(chr(event)):
                 self.trigs.get(chr(event))()
+            elif self.trigs.get(str(curses.keyname(event))):
+                self.trigs.get(str(curses.keyname(event)))()
             elif self.trigs.get('rest'):
                 self.trigs.get('rest')(event)
             return event
