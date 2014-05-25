@@ -204,7 +204,7 @@ def executeText():
 def drawHelpPrompt():
     if current == master and len(current.get('Subtasks')) == 0:
         h, w = win.getmaxyx()
-        win.addstr(h-4, 2, "Type 'h', 'help' or 'Enter' for commands.")
+        win.addstr(h-4, 2, "Type 'h', 'help' or '?' for commands.")
 
 
 def drawAll():
