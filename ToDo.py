@@ -214,7 +214,6 @@ def drawAll():
     drawHelpPrompt()
     current.draw()
     cbox.draw()
-    ers = curses.erasechar()
 
 
 def nothing():
