@@ -77,6 +77,8 @@ To-Do
 - Add `cross` / `cr` to cross off tasks and move them to bottom (puts line through text and removes ID from draw)
 - Date & time for task (with reminder)
 - Save list to ToDo.txt file
+- Move task to parent or into another task as subtask
+- Collaborate on tasks
 
 
 github.com/mitchmindtree
