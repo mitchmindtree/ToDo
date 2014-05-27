@@ -69,6 +69,9 @@ Quit the program with `q`, `x`, `quit` or `exit`
 Scroll down the list with `ctrl+j`
 Scroll up the list with `ctrl+k`
 
+If no command is detected upon entering some text, the text will simply be
+added as a task to the current list (like the `add`/`+` command).
+
 
 To-Do
 -----
