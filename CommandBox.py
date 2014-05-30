@@ -53,7 +53,6 @@ class CommandBox():
     def addChar(self, char):
         '''Add char to end of string and adjust vistext.'''
         char = chr(char)
-        self.win.addstr(24, 4, char)
         self.text = self.text+char
         self.br += 1
         if self.br - self.bl > self.getMaxVistextLen():
