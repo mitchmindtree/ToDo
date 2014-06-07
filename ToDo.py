@@ -177,6 +177,23 @@ def checkForClose(text):
     return True
 
 
+def checkForEdit(text):
+    '''Check text buffer for indication to edit a task.'''
+    if text.lower()[:1] == "e":
+        editTask(current)
+    elif text.lower()[:4] == "edit":
+        editTask(current)
+    elif text.lower()[:2] == "e ":
+        s = text[2:]
+    elif text.lower()[:5] == "edit ":
+        s = text[5:]
+
+
+def editTask(task):
+    '''Edit the name of this task.'''
+    pass
+
+
 def openTask(task):
     global current
     current = task

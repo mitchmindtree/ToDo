@@ -179,11 +179,18 @@ class Task(dict):
             IDb = len(self.get('Subtasks'))-1
         elif IDb < 0:
             IDb = 0
-        for t in self.get('Subtasks'):
-            if t.get('ID') == IDa:
-                t['ID'] = IDb
-            elif t.get('ID') >= IDb and not t.get('ID') > IDa:    
-                t['ID'] = t['ID']+1
+        if IDa < IDb:
+            for t in self.get('Subtasks'):
+                if t.get('ID') > IDa and t.get('ID') <= IDb:
+                    t['ID'] = t.get('ID') - 1
+                elif t.get('ID') == IDa:
+                    t['ID'] = IDb
+        elif IDa > IDb:
+            for t in self.get('Subtasks'):
+                if t.get('ID') < IDa and t.get('ID') >= IDb:
+                    t['ID'] = t.get('ID') + 1
+                elif t.get('ID') == IDa:
+                    t['ID'] = IDb
         self.sortTasks()
         for i in range(len(self.get('Subtasks'))):
             self.get('Subtasks')[i]['ID'] = i
