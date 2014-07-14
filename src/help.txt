@@ -70,9 +70,10 @@
 
         Are generally awesome.
 
-    The creator:
+    The creators:
 
         github.com/mitchmindtree
+        github.com/adentranter
 
     List ideas:
 
