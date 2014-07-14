@@ -1,7 +1,7 @@
 ToDo CLI
 ========
 
-My little ToDo CLI! Much excite.
+A little ToDo CLI/API/APP! Much excite.
 
 
 ![ToDo Pic](https://raw.github.com/mitchmindtree/ToDo-CLI/master/todopic.png)
@@ -76,12 +76,11 @@ added as a task to the current list (like the `add`/`+` command).
 To-Do
 -----
 
-- Vim plugin
-- Add `cross` / `cr` to cross off tasks and move them to bottom (puts line through text and removes ID from draw)
-- Date & time for task (with reminder)
-- Save list to ToDo.txt file
-- Move task to parent or into another task as subtask
-- Collaborate on tasks
+
+Both features and fixes can be found [here] (https://github.com/ToDoDev/ToDo/issues).
 
 
-github.com/mitchmindtree
+Maintainers
+-----------
+
+[Mitch] (https://github.com/mitchmindtree) and [Aden] (https://github.com/adentranter)
