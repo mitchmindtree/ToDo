@@ -1,5 +1,5 @@
-ToDo CLI
-========
+ToDo
+====
 
 A little ToDo CLI/API/APP! Much excite.
 
